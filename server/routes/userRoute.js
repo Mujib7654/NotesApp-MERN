@@ -1,16 +1,16 @@
 const express = require('express');
-const userRoute = express.Router();
+const router = express.Router();
 const User = require('../models/userSchema');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 
-userRoute.get('/', (req, res) => {
-    res.send('Hello from userRoute');
+router.get('/', (req, res) => {
+    res.send('Hello from router');
 });
 
 //register
-userRoute.post('/register', async(req, res) => {
+router.post('/register', async(req, res) => {
     const {name, email, password} = req.body;
     
     if(!name || !email || !password)
@@ -38,7 +38,7 @@ userRoute.post('/register', async(req, res) => {
 
 
 //signin
-userRoute.post('/signin', async(req,res) => {
+router.post('/signin', async(req,res) => {
     try {
         const {email, password} = req.body;
         
@@ -68,4 +68,4 @@ userRoute.post('/signin', async(req,res) => {
 });
 
 
-module.exports = userRoute;
+module.exports = router;
