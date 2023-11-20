@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/userSchema');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 router.get('/', (req, res) => {
     res.send('Hello from router');
@@ -30,6 +32,41 @@ router.post('/register', async(req, res) => {
     } catch (err) {
         console.log(err);
         return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
+//signin
+router.post('/signin', async(req,res) => {
+    try {
+        const {email, password} = req.body;
+        //token expirein
+        let option = {
+            expiresIn : "30m"
+        }
+
+        //validation
+        if(!email || !password) {
+            return res.status(422).json({error: 'Please Fill All The Fields Properly'})
+        }
+        //check email and password match with our existing db
+        const userLogin = await User.findOne({email: email});
+
+        if(userLogin) {
+            const isMatch = await bcrypt.compare(password, userLogin.password);
+            if (!isMatch){
+                res.status(400).json({error: "Invalid Password"});
+            }
+            else{
+                let token = jwt.sign({_id: userLogin._id}, process.env.SECRET_KEY, option);
+                res.status(200).json({message: "user signin successfully", token});
+            }
+        }
+        else{
+            res.status(400).json({error: "Invalid email"});
+        }
+    } catch (error) {
+        console.log(`${error}`)
     }
 });
 
