@@ -1,17 +1,18 @@
 const express = require('express');
-const router = express.Router();
+const userRoute = express.Router();
 const User = require('../models/userSchema');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-router.get('/', (req, res) => {
-    res.send('Hello from router');
+
+userRoute.get('/', (req, res) => {
+    res.send('Hello from userRoute');
 });
 
 //register
-router.post('/register', async(req, res) => {
+userRoute.post('/register', async(req, res) => {
     const {name, email, password} = req.body;
-
+    
     if(!name || !email || !password)
     {
         return res.status(422).json({error: "Please fill all the fields properly"});
@@ -37,28 +38,24 @@ router.post('/register', async(req, res) => {
 
 
 //signin
-router.post('/signin', async(req,res) => {
+userRoute.post('/signin', async(req,res) => {
     try {
         const {email, password} = req.body;
-        //token expirein
-        let option = {
-            expiresIn : "30m"
-        }
-
+        
         //validation
         if(!email || !password) {
             return res.status(422).json({error: 'Please Fill All The Fields Properly'})
         }
         //check email and password match with our existing db
         const userLogin = await User.findOne({email: email});
-
+        
         if(userLogin) {
             const isMatch = await bcrypt.compare(password, userLogin.password);
             if (!isMatch){
                 res.status(400).json({error: "Invalid Password"});
             }
             else{
-                let token = jwt.sign({_id: userLogin._id}, process.env.SECRET_KEY, option);
+                let token = jwt.sign({_id: userLogin._id}, process.env.SECRET_KEY, { expiresIn: '30m' });
                 res.status(200).json({message: "user signin successfully", token});
             }
         }
@@ -70,4 +67,5 @@ router.post('/signin', async(req,res) => {
     }
 });
 
-module.exports = router;
+
+module.exports = userRoute;
